@@ -61,15 +61,14 @@ class IntellitipCommand(sublime_plugin.EventListener):
                 if found:
                     menus = ['<style>%s</style>' % Pref.css]
                     # Syntax
-                    menus.append("<h1>Signature:</h1>")
-                    menus.append(found["syntax"])
+                    menus.append("<h1>%s</h1>" % found["syntax"])
 
                     for descr in re.sub("(.{100,120}[\.]) ", "\\1||", found["descr"]).split("||"): #Spit long description lines
                         menus.append("<br>"+descr+"<br>")
 
                     #Parameters
                     if found["params"]:
-                        menus.append("<br><h1>Parameters:</h1>")
+                        menus.append("<h1>Parameters:</h1>")
 
                     for parameter in found["params"]:
                         menus.append("- <b>"+parameter["name"]+":</b> "+parameter["descr"]+"<br>")
