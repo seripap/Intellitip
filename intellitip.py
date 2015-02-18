@@ -44,19 +44,15 @@ class IntellitipCommand(sublime_plugin.TextCommand):
                 menus.append("<h1>Signature:</h1>")
                 menus.append(found["syntax"])
 
-                # Description
-                menus.append("<br><br><h1>Description:</h1>")
                 for descr in re.sub("(.{100,120}[\.]) ", "\\1||", found["descr"]).split("||"): #Spit long description lines
-                    menus.append(descr+"<br>")
+                    menus.append("<br>"+descr+"<br>")
 
                 #Parameters
                 if found["params"]:
                     menus.append("<br><h1>Parameters:</h1>")
 
                 for parameter in found["params"]:
-                    menus.append(" - "+parameter["name"]+": "+parameter["descr"])
-                    """for part in re.sub("(.{50,150}?)\. ", "\\1.|", parameter["descr"]).split("|"):
-                        menus.append("<br>- "+part)"""
+                    menus.append("- "+parameter["name"]+": "+parameter["descr"]+"<br>")
 
                 self.view.show_popup(''.join(menus), location=-1, max_width=600)
             else:
