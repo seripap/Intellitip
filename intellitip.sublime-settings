@@ -1,10 +1,10 @@
 {
     "help_links": {
-        ".*": "http://devdocs.io/%(path)s",
-        "php": "http://php.net/manual-lookup.php?pattern=%(name)s",
-        "python": "http://docs.python.org/3/search.html?q=%(name)s",
-        "jquery": "http://api.jquery.com/%(name)s",
-        "javascript|dom": "https://developer.mozilla.org/en-US/search?topic=js&topic=html&topic=api&q=%(name)s",
+        ".*": "http://devdocs.io/%s",
+        "php": "http://php.net/manual-lookup.php?pattern=%s",
+        "python": "http://docs.python.org/3/search.html?q=%s",
+        "jquery": "http://api.jquery.com/%s",
+        "javascript|dom": "https://developer.mozilla.org/en-US/search?topic=js&topic=html&topic=api&q=%s",
     },
     "docs": {
         "source.php"    : "PHP",

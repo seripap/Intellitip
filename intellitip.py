@@ -1,4 +1,4 @@
-import sublime_plugin, sublime, json
+import sublime_plugin, sublime, json, webbrowser
 import re, os
 from time import time
 
@@ -8,6 +8,7 @@ class IntellitipCommand(sublime_plugin.EventListener):
 
     cache = {}
     region_row = []
+    lang = None
 
     def on_activated(self, view):
         Pref.time = time()
@@ -22,7 +23,7 @@ class IntellitipCommand(sublime_plugin.EventListener):
         Pref.time = now
 
     def run(self, view, where):
-        global region_row
+        global region_row, lang
 
         view_settings = view.settings()
         if view_settings.get('is_widget'):
@@ -74,9 +75,19 @@ class IntellitipCommand(sublime_plugin.EventListener):
                     for parameter in found["params"]:
                         menus.append("- <b>"+parameter["name"]+":</b> "+parameter["descr"]+"<br>")
 
-                    view.show_popup(''.join(menus), location=-1, max_width=600)
+                    self.appendLinks(menus, found)
+
+                    view.show_popup(''.join(menus), location=-1, max_width=600, on_navigate=self.on_navigate)
                 else:
                     view.hide_popup()
+
+    def appendLinks(self, menus, found):
+        for pattern, link in sorted(Pref.help_links.items()):
+            if re.match(pattern, found["path"]):
+                host = re.match(".*?//(.*?)/", link).group(1)
+                menus.append('<br>Open docs: <a href="%s">Docs</a>' % found["name"])
+                break
+        return menus
 
     def getLang(self, view):
         scope = view.scope_name(view.sel()[0].b) #try to match against the current scope
@@ -88,6 +99,10 @@ class IntellitipCommand(sublime_plugin.EventListener):
     def getFunctionNames(self, view, completions):
         global region_row
         return [view.substr(view.word(view.sel()[0]))]
+
+    def on_navigate(self, link):
+        global lang
+        webbrowser.open_new_tab(Pref.help_links[lang.lower()] % link)
 
     def debug(self, *text):
         if Pref.debug:
@@ -109,12 +124,13 @@ def plugin_loaded():
 
     class Pref:
         def load(self):
-            Pref.wait_time = 0.12
-            Pref.time      = time()
-            Pref.css_file  = settings.get('css_file', "Intellitip/css/default.css")
-            Pref.docs      = settings.get('docs', None)
-            Pref.debug     = settings.get('debug', False)
-            Pref.css       = None
+            Pref.wait_time  = 0.12
+            Pref.time       = time()
+            Pref.css_file   = settings.get('css_file', "Intellitip/css/default.css")
+            Pref.help_links = settings.get('help_links', [])
+            Pref.docs       = settings.get('docs', None)
+            Pref.debug      = settings.get('debug', False)
+            Pref.css        = None
 
     settings = sublime.load_settings("intellitip.sublime-settings")
     Pref = Pref()
