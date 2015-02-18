@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os, re, json
 
 # Update DB from local devdocs.io dump: https://github.com/Thibaut/devdocs
