@@ -2,6 +2,7 @@ import sublime_plugin, sublime, json
 import re, os
 from time import time
 
+settings = {}
 
 class IntellitipCommand(sublime_plugin.EventListener):
 
@@ -100,8 +101,11 @@ def init_css():
     except:
         Pref.css = None
 
+    settings.clear_on_change('reload')
+    settings.add_on_change('reload', 'init_css')
+
 def plugin_loaded():
-    global Pref
+    global Pref, settings
 
     class Pref:
         def load(self):
