@@ -114,5 +114,5 @@ class IntellitipCommand(sublime_plugin.TextCommand):
 			webbrowser.open_new_tab(self.menu_links[item])
 
 	def debug(self, *text):
-		print(*text)
-		# if self.settings.get("debug"):
+		if self.settings.get("debug"):
+			print(*text)
