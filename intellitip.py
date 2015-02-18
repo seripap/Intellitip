@@ -2,15 +2,16 @@
 import sublime_plugin, sublime, json
 import re, threading, time, os, webbrowser
 
-class IntelliDocsCommand(sublime_plugin.TextCommand):
-	
+class IntellitipCommand(sublime_plugin.TextCommand):
+
 	last_function_name = None
 	last_found = False
 	cache = {}
 	menu_links = {}
+
 	def __init__(self, view):
 		self.view = view
-		self.settings = sublime.load_settings("IntelliDocs.sublime-settings")
+		self.settings = sublime.load_settings("intellitip.sublime-settings")
 
 	def run(self, edit):
 		# Find db for lang
@@ -39,29 +40,32 @@ class IntelliDocsCommand(sublime_plugin.TextCommand):
 				self.view.set_status('hint', found["syntax"]+" | ")
 				menus = []
 				# Syntax
+				menus.append("<b>Signature:</b><br>")
 				menus.append(found["syntax"])
 
 				# Description
-				for descr in re.sub("(.{80,100}[\.]) ", "\\1||", found["descr"]).split("||"): #Spit long description lines
-					menus.append(" "+descr)
+				menus.append("<br><br><b>Description:</b>")
+				for descr in re.sub("(.{100,120}[\.]) ", "\\1||", found["descr"]).split("||"): #Spit long description lines
+					menus.append("<br>"+descr)
 
 				#Parameters
 				if found["params"]:
-					menus.append("Parameters:")
-				for parameter in found["params"]:
-					menus.append(" - "+parameter["name"]+": "+parameter["descr"])
-					"""first = True
-					for part in re.sub("(.{50,150}?)\. ", "\\1.|", parameter["descr"]).split("|"):
-						if first:
-							menus.append(parameter["name"]+": "+part.strip())
-						else:
-							menus.append("- "+part)
-						first = False"""
-				self.last_found = found
+					menus.append("<br><br><b>Parameters</b>:<br>")
 
-				menu = self.appendLinks(menus, found)
-					
-				self.view.show_popup_menu(menus, self.action)
+					for parameter in found["params"]:
+						menus.append(" - "+parameter["name"]+": "+parameter["descr"])
+						"""first = True
+						for part in re.sub("(.{50,150}?)\. ", "\\1.|", parameter["descr"]).split("|"):
+							if first:
+								menus.append("<br>"+parameter["name"]+": "+part.strip())
+							else:
+								menus.append("<br>- "+part)
+							first = False"""
+					self.last_found = found
+
+				# menu = self.appendLinks(menus, found)
+
+				self.view.show_popup(''.join(menus), location=-1, max_width=600)
 			else:
 				self.view.erase_status('hint')
 
@@ -110,5 +114,5 @@ class IntelliDocsCommand(sublime_plugin.TextCommand):
 			webbrowser.open_new_tab(self.menu_links[item])
 
 	def debug(self, *text):
-		if self.settings.get("debug"):
-			print(*text)
+		print(*text)
+		# if self.settings.get("debug"):
