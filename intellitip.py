@@ -7,7 +7,6 @@ css = None
 
 class IntellitipCommand(sublime_plugin.TextCommand):
 
-    last_found = False
     cache = {}
     menu_links = {}
 
@@ -60,7 +59,6 @@ class IntellitipCommand(sublime_plugin.TextCommand):
                     menus.append(" - "+parameter["name"]+": "+parameter["descr"])
                     """for part in re.sub("(.{50,150}?)\. ", "\\1.|", parameter["descr"]).split("|"):
                         menus.append("<br>- "+part)"""
-                self.last_found = found
 
                 self.view.show_popup(''.join(menus), location=-1, max_width=600)
             else:
