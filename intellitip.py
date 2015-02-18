@@ -17,10 +17,7 @@ class IntellitipCommand(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         now = time()
-        # if now - time > wait_time:
         sublime.set_timeout(lambda:self.run(view, 'selection_modified'), 0)
-        # else:
-            # sublime.set_timeout(lambda:self.display_current_class_and_function_delayed(view), int(1000*wait_time))
         Pref.time = now
 
     def run(self, view, where):
@@ -122,4 +119,3 @@ def plugin_loaded():
     init_css()
 
     settings.add_on_change('reload', lambda:Pref.load())
-
