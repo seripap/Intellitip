@@ -1,9 +1,6 @@
 import sublime_plugin, sublime, json
-import re, threading, os
+import re, os
 from time import time
-
-settings = {}
-css = None
 
 
 class IntellitipCommand(sublime_plugin.EventListener):
@@ -26,8 +23,6 @@ class IntellitipCommand(sublime_plugin.EventListener):
         Pref.time = now
 
     def run(self, view, where):
-        global css
-
         view_settings = view.settings()
         if view_settings.get('is_widget'):
             return
@@ -64,7 +59,8 @@ class IntellitipCommand(sublime_plugin.EventListener):
                         break
 
                 if found:
-                    menus = ['<style>%s</style>' % css]
+                    print(Pref.css)
+                    menus = ['<style>%s</style>' % Pref.css]
                     # Syntax
                     menus.append("<h1>Signature:</h1>")
                     menus.append(found["syntax"])
@@ -118,15 +114,12 @@ class IntellitipCommand(sublime_plugin.EventListener):
             print(*text)
 
 def init_css():
-    global settings
-    global css
-
-    css_file = 'Packages/' + settings.get('css_file', "Intellitip/css/default.css")
+    css_file = 'Packages/' + Pref.css_file
 
     try:
-        css = sublime.load_resource(css_file)
+        Pref.css = sublime.load_resource(css_file)
     except:
-        css = None
+        Pref.css = None
 
     settings.clear_on_change('reload')
     settings.add_on_change('reload', init_css)
@@ -138,14 +131,15 @@ def plugin_loaded():
         def load(self):
             Pref.wait_time  = 0.12
             Pref.time       = time()
-            Pref.css_file   = settings.get('css_file', False)
+            Pref.css_file   = settings.get('css_file', "Intellitip/css/default.css")
             Pref.docs       = settings.get('docs', None)
             Pref.help_links = settings.get('help_links', None)
+            Pref.css        = None
 
     settings = sublime.load_settings("intellitip.sublime-settings")
     Pref = Pref()
     Pref.load()
+    init_css()
 
     settings.add_on_change('reload', lambda:Pref.load())
 
-    init_css()
