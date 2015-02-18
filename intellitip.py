@@ -52,7 +52,7 @@ class IntellitipCommand(sublime_plugin.TextCommand):
                     menus.append("<br><h1>Parameters:</h1>")
 
                 for parameter in found["params"]:
-                    menus.append("- "+parameter["name"]+": "+parameter["descr"]+"<br>")
+                    menus.append("- <b>"+parameter["name"]+":</b> "+parameter["descr"]+"<br>")
 
                 self.view.show_popup(''.join(menus), location=-1, max_width=600)
             else:

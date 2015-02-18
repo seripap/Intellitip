@@ -12,5 +12,5 @@
         "source.coffee" : "Javascript",
         "source.python" : "Python"
     },
-    "css_file": "Intellitip/css/dark.css"
+    "css_file": "Intellitip/css/default.css"
 }
