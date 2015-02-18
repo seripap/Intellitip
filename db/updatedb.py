@@ -4,11 +4,11 @@ import os, re, json
 # Update DB from local devdocs.io dump: https://github.com/Thibaut/devdocs
 # (Tested on Python 2.7 win7)
 
-path_devdocs = "../var/devdocs"
+path_devdocs = "/Users/james.brooks/Downloads/devdocs-master"
 path_db = "."
 docs = {
 	"php": "PHP",
-	"python": "Python",
+	# "python": "Python",
 	"javascript": "Javascript",
 	"dom": "Javascript",
 	"jquery": "Javascript"
@@ -16,7 +16,7 @@ docs = {
 
 patterns = {
 	"PHP": {
-		#"skip"	: '.*::',
+		# "skip"	: '.*::',
 		"syntax": ".*?methodsynopsis.*?>(.*?)</div>",
 		"descr"	: ".*rdfs-comment.*?>(.*?)</p>",
 		"params": "<dt>(.*?)<dd>(.*?)</dd>"
@@ -83,7 +83,7 @@ class Parser:
 		for entry in index["entries"]:
 			# Open doc file
 			entry["name"] = entry["name"].replace(" (class)", "").strip("().")
-			if "skip" in self.patterns and re.match(self.patterns["skip"], entry["name"]): 
+			if "skip" in self.patterns and re.match(self.patterns["skip"], entry["name"]):
 				print("S", end="")
 				continue
 
