@@ -8,7 +8,6 @@ css = None
 class IntellitipCommand(sublime_plugin.TextCommand):
 
     cache = {}
-    menu_links = {}
 
     def __init__(self, view):
         self.view = view
@@ -40,7 +39,6 @@ class IntellitipCommand(sublime_plugin.TextCommand):
                     break
 
             if found:
-                self.view.set_status('hint', found["syntax"]+" | ")
                 menus = ['<style>%s</style>' % css]
                 # Syntax
                 menus.append("<h1>Signature:</h1>")
