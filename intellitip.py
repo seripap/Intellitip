@@ -6,6 +6,7 @@ from time import time
 class IntellitipCommand(sublime_plugin.EventListener):
 
     cache = {}
+    region_row = []
 
     def on_activated(self, view):
         Pref.time = time()
@@ -23,6 +24,8 @@ class IntellitipCommand(sublime_plugin.EventListener):
         Pref.time = now
 
     def run(self, view, where):
+        global region_row
+
         view_settings = view.settings()
         if view_settings.get('is_widget'):
             return
@@ -59,7 +62,6 @@ class IntellitipCommand(sublime_plugin.EventListener):
                         break
 
                 if found:
-                    print(Pref.css)
                     menus = ['<style>%s</style>' % Pref.css]
                     # Syntax
                     menus.append("<h1>Signature:</h1>")
@@ -87,30 +89,11 @@ class IntellitipCommand(sublime_plugin.EventListener):
         return re.match(".*/(.*?).tmLanguage", view.settings().get("syntax")).group(1) #no match in predefined docs, return from syntax filename
 
     def getFunctionNames(self, view, completions):
-        # Find function name
-        word = view.word(view.sel()[0])
-        word.a = word.a - 100 # Look back 100 character
-        word.b = word.b + 1 # Ahead word +1 char
-        buff = view.substr(word).strip()
-
-        buff = " "+re.sub(".*\n", "", buff) # Keep only last line
-
-        # find function names ending with (
-        matches = re.findall("([A-Za-z0-9_\]\.\$\)]+\.[A-Za-z0-9_\.\$]+|[A-Za-z0-9_\.\$]+[ ]*\()", buff)
-        matches.reverse()
-        function_names = []
-        for function_name in matches:
-            function_name = function_name.strip(".()[] ")
-            if len(function_name) < 2: continue
-            function_names.append(function_name)
-            if "." in function_name:
-                function_names.append(re.sub(".*\.(.*?)$", "\\1", function_name))
-        function_names.append(view.substr(view.word(view.sel()[0]))) #append current word
-        self.debug(function_names)
-        return function_names
+        global region_row
+        return [view.substr(view.word(view.sel()[0]))]
 
     def debug(self, *text):
-        if settings.get("debug"):
+        if Pref.debug:
             print(*text)
 
 def init_css():
@@ -121,20 +104,17 @@ def init_css():
     except:
         Pref.css = None
 
-    settings.clear_on_change('reload')
-    settings.add_on_change('reload', init_css)
-
 def plugin_loaded():
     global Pref
 
     class Pref:
         def load(self):
-            Pref.wait_time  = 0.12
-            Pref.time       = time()
-            Pref.css_file   = settings.get('css_file', "Intellitip/css/default.css")
-            Pref.docs       = settings.get('docs', None)
-            Pref.help_links = settings.get('help_links', None)
-            Pref.css        = None
+            Pref.wait_time = 0.12
+            Pref.time      = time()
+            Pref.css_file  = settings.get('css_file', "Intellitip/css/default.css")
+            Pref.docs      = settings.get('docs', None)
+            Pref.debug     = settings.get('debug', False)
+            Pref.css       = None
 
     settings = sublime.load_settings("intellitip.sublime-settings")
     Pref = Pref()
