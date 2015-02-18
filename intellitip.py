@@ -58,13 +58,8 @@ class IntellitipCommand(sublime_plugin.TextCommand):
 
                 for parameter in found["params"]:
                     menus.append(" - "+parameter["name"]+": "+parameter["descr"])
-                    """first = True
-                    for part in re.sub("(.{50,150}?)\. ", "\\1.|", parameter["descr"]).split("|"):
-                        if first:
-                            menus.append("<br>"+parameter["name"]+": "+part.strip())
-                        else:
-                            menus.append("<br>- "+part)
-                        first = False"""
+                    """for part in re.sub("(.{50,150}?)\. ", "\\1.|", parameter["descr"]).split("|"):
+                        menus.append("<br>- "+part)"""
                 self.last_found = found
 
                 self.view.show_popup(''.join(menus), location=-1, max_width=600)
