@@ -112,7 +112,7 @@ def init_css():
     css_file = 'Packages/' + Pref.css_file
 
     try:
-        Pref.css = sublime.load_resource(css_file)
+        Pref.css = sublime.load_resource(css_file).replace('\r', '')
     except:
         Pref.css = None
 
