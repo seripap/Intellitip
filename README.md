@@ -14,7 +14,7 @@ Supported languages:
 
 Move your cursor over a function name and you'll see a tooltip.
 
-![Screenshot](/screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/jbrooksuk/Intellitip/master/screenshot.png)
 
 # License
 
