@@ -14,7 +14,7 @@ return base_convert($rand, 10, 36);
 ?>
 <script>
 $("#elem").removeClass("flash")
-setTimeout (-> 
+setTimeout (->
 	alert "test Coffeescript!"
 ), 1000
 </script>
