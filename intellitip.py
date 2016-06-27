@@ -33,7 +33,7 @@ class IntellitipCommand(sublime_plugin.EventListener):
             region_row, region_col = view.rowcol(region.begin())
 
             if region_row != view_settings.get('intellitip_row', -1):
-                view_settings.set('intellip_row', region_row)
+                view_settings.set('intellitip_row', region_row)
             else:
                 return
 
