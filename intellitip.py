@@ -93,8 +93,7 @@ class IntellitipCommand(sublime_plugin.EventListener):
         scope = view.scope_name(view.sel()[0].b) #try to match against the current scope
         for match, lang in Pref.docs.items():
             if re.match(".*"+match, scope): return lang
-        self.debug(scope)
-        return re.match(".*/(.*?).tmLanguage", view.settings().get("syntax")).group(1) #no match in predefined docs, return from syntax filename
+        return re.match(".*/(.*?).sublime-syntax", view.settings().get("syntax")).group(1) #no match in predefined docs, return from syntax filename
 
     def getFunctionNames(self, view, completions):
         global region_row
