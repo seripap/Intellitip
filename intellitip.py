@@ -42,10 +42,13 @@ class IntellitipCommand(sublime_plugin.TextCommand):
 
         # Try to match against the current scope
         scope = self.view.scope_name(self.view.sel()[0].b)
+        print("scope: " + scope)
 
-        for match, lang2 in self.settings.get("docs").items():
-            if re.match(".*" + match, scope):
-                language = lang2
+        for config_pattern, config_language in self.settings.get("docs").items():
+            print("config_pattern: "  + config_pattern)
+            print("config_language: " + config_language)
+            if re.match(".*" + config_pattern, scope):
+                return config_language
 
         syntax = self.view.settings().get("syntax")
 
@@ -53,13 +56,13 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         matched = re.match(".*/(.*?).sublime-syntax", syntax)
 
         if matched:
-            language = matched.group(1)
+            return matched.group(1)
 
         # No match in syntax filename, try tmLanguage
         matched = re.match(".*/(.*?).tmLanguage", syntax)
 
         if matched:
-            language = matched.group(1)
+            return matched.group(1)
 
         return language
 
