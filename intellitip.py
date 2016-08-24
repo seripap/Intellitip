@@ -1,36 +1,51 @@
-import sublime_plugin, sublime, json, webbrowser
-import re, os
-from time import time
+"""
+IntelliTip plugin for Sublime Text 3.
+"""
 
-settings = {}
+import json
+import os
+import re
+import webbrowser
 
-class IntellitipCommand(sublime_plugin.EventListener):
+import sublime
+import sublime_plugin
 
-    cache = {}
-    region_row = []
-    lang = None
 
-    def on_activated(self, view):
-        Pref.time = time()
-        sublime.set_timeout(lambda:self.run(view, 'activated'), 0)
+def load_css_file_to_settings(settings):
+    css_file = "Packages/" + settings.get("css_file", "Intellitip/css/default.css")
 
-    def on_modified(self, view):
-        Pref.time = time()
+    css = sublime.load_resource(css_file).replace("\r", "")
 
-    def on_selection_modified(self, view):
-        now = time()
-        sublime.set_timeout(lambda:self.run(view, 'selection_modified'), 0)
-        Pref.time = now
+    settings.set("css", css)
 
-    def run(self, view, where):
-        global region_row, lang
 
-        view_settings = view.settings()
+def get_function_names(view):
+    return [view.substr(view.word(view.sel()[0]))]
+
+
+class IntellitipCommand(sublime_plugin.TextCommand):
+    cache    = {}
+    lang     = None
+    settings = None
+
+    def __init__(self, view):
+        super(IntellitipCommand, self).__init__(view)
+
+        self.load_settings()
+
+    def load_settings(self):
+        self.settings = sublime.load_settings("intellitip.sublime-settings")
+
+        load_css_file_to_settings(self.settings)
+
+    def run(self, _):
+        view_settings = self.view.settings()
+
         if view_settings.get('is_widget'):
             return
 
-        for region in view.sel():
-            region_row, region_col = view.rowcol(region.begin())
+        for region in self.view.sel():
+            region_row, _ = self.view.rowcol(region.begin())
 
             if region_row != view_settings.get('intellitip_row', -1):
                 view_settings.set('intellitip_row', region_row)
@@ -38,117 +53,88 @@ class IntellitipCommand(sublime_plugin.EventListener):
                 return
 
             # Find db for lang
-            lang = self.getLang(view)
-            if lang not in self.cache: #DEBUG disable cache: or 1 == 1
-                path_db = os.path.dirname(os.path.abspath(__file__))+"/db/%s.json" % lang
-                self.debug("Loaded intelliDocs db:", path_db)
+            self.get_lang(self.view)
+            print(self.lang)
+
+            if self.lang not in self.cache:
+                path_db = os.path.dirname(os.path.abspath(__file__)) + "/db/%s.json" % self.lang
 
                 if os.path.exists(path_db):
-                    self.cache[lang] = json.load(open(path_db))
+                    self.cache[self.lang] = json.load(open(path_db))
                 else:
-                    self.cache[lang] = {}
+                    self.cache[self.lang] = {}
 
-            completions = self.cache[lang]
+            completions = self.cache[self.lang]
 
             # Find in completions
             if completions:
-                function_names = self.getFunctionNames(view, completions)
+                function_names = get_function_names(self.view)
                 found = False
+
                 for function_name in function_names:
                     completion = completions.get(function_name)
+
                     if completion:
                         found = completion
                         break
 
                 if found:
-                    menus = ['<style>%s</style>' % Pref.css]
+                    menus = ['<style>%s</style>' % self.settings.get("css")]
+
                     # Syntax
                     menus.append("<h1>%s</h1>" % found["syntax"])
 
-                    for descr in re.sub("(.{100,120}[\.]) ", "\\1||", found["descr"]).split("||"): #Spit long description lines
-                        menus.append("<br>"+descr+"<br>")
+                    # Spit long description lines
+                    for descr in re.sub("(.{100,120}[\\.]) ", "\\1||", found["descr"]).split("||"):
+                        menus.append("<br>" + descr + "<br>")
 
-                    #Parameters
+                    # Parameters
                     if found["params"]:
                         menus.append("<h1>Parameters:</h1>")
 
                     for parameter in found["params"]:
-                        menus.append("- <b>"+parameter["name"]+":</b> "+parameter["descr"]+"<br>")
+                        menus.append("- <b>" + parameter["name"] + ":</b> " + parameter["descr"] + "<br>")
 
-                    self.appendLinks(menus, found)
+                    self.append_links(menus, found)
 
-                    view.show_popup(''.join(menus), location=-1, max_width=600, on_navigate=self.on_navigate)
+                    self.view.show_popup(''.join(menus), location = -1, max_width = 600, on_navigate = self.on_navigate)
                 else:
-                    view.hide_popup()
+                    self.view.hide_popup()
 
-    def appendLinks(self, menus, found):
-        for pattern, link in sorted(Pref.help_links.items()):
+    def append_links(self, menus, found):
+        for pattern, _ in sorted(self.settings.get("help_links").items()):
             if re.match(pattern, found["path"]):
-                host = re.match(".*?//(.*?)/", link).group(1)
                 menus.append('<br>Open docs: <a href="%s">Docs</a>' % found["name"])
                 break
+
         return menus
 
-    def getLang(self, view):
-        scope = view.scope_name(view.sel()[0].b) #try to match against the current scope
-                                                 #
-        for match, lang in Pref.docs.items():
+    def get_lang(self, view):
+        # Try to match against the current scope
+        scope = view.scope_name(view.sel()[0].b)
+
+        for match, lang in self.settings.get("docs").items():
             if re.match(".*" + match, scope):
-                return lang
+                self.lang = lang
+                return
 
         syntax = view.settings().get("syntax")
 
         # No match in predefined docs, return from syntax filename
         matched = re.match(".*/(.*?).sublime-syntax", syntax)
-        if (matched):
-            return matched.group(1)
+
+        if matched:
+            self.lang = matched.group(1)
+            return
 
         # No match in syntax filename, try tmLanguage
         matched = re.match(".*/(.*?).tmLanguage", syntax)
-        if (matched):
-            return matched.group(1)
 
-        return None
+        if matched:
+            self.lang = matched.group(1)
+            return
 
-    def getFunctionNames(self, view, completions):
-        global region_row
-        return [view.substr(view.word(view.sel()[0]))]
+        self.lang = None
 
     def on_navigate(self, link):
-        global lang
-        webbrowser.open_new_tab(Pref.help_links[lang.lower()] % link)
-
-    def debug(self, *text):
-        if Pref.debug:
-            print(*text)
-
-def init_css():
-    css_file = 'Packages/' + Pref.css_file
-
-    try:
-        Pref.css = sublime.load_resource(css_file).replace('\r', '')
-    except:
-        Pref.css = None
-
-    settings.clear_on_change('reload')
-    settings.add_on_change('reload', 'init_css')
-
-def plugin_loaded():
-    global Pref, settings
-
-    class Pref:
-        def load(self):
-            Pref.wait_time  = 0.12
-            Pref.time       = time()
-            Pref.css_file   = settings.get('css_file', "Intellitip/css/default.css")
-            Pref.help_links = settings.get('help_links', [])
-            Pref.docs       = settings.get('docs', None)
-            Pref.debug      = settings.get('debug', False)
-            Pref.css        = None
-
-    settings = sublime.load_settings("intellitip.sublime-settings")
-    Pref = Pref()
-    Pref.load()
-    init_css()
-
-    settings.add_on_change('reload', lambda:Pref.load())
+        webbrowser.open_new_tab(self.settings.get("help_links")[self.lang.lower()] % link)
