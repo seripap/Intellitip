@@ -1,8 +1,8 @@
 # Intellitip
 
-Lovingly forked from [Sublime-Intellidocs](https://github.com/shortcutme/Sublime-IntelliDocs).
+Lovingly forked from [Sublime-Intellitip](https://github.com/jbrooksuk/Intellitip).
 
-**IMPORTANT: ONLY COMPATIBLE WITH SUBLIME TEXT 3 DEV 3070!**
+**IMPORTANT: ONLY COMPATIBLE WITH SUBLIME TEXT 3 version >= 3070!**
 
 Supported languages:
 
@@ -12,7 +12,7 @@ Supported languages:
 
 ## Usage
 
-Move your cursor over a function name and you'll see a tooltip.
+Place your cursor over a function name, hit `alt+d` (Linux, shortcuts are not defined for Windows/OSX) and you'll see a tooltip.
 
 ![Screenshot](https://raw.githubusercontent.com/jbrooksuk/Intellitip/master/screenshot.png)
 
