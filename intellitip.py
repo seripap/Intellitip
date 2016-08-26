@@ -12,6 +12,10 @@ import sublime_plugin
 
 
 class IntellitipCommand(sublime_plugin.TextCommand):
+    """
+    The only class for this plugin.
+    """
+
     cached_completions = {}
     settings           = None
 
@@ -21,10 +25,19 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         self.load_settings()
 
     def load_settings(self):
+        """
+        Loads settings from configuration file and loads necessary resources.
+        """
+
         self.settings = sublime.load_settings("intellitip.sublime-settings")
         self.load_css_file_to_settings()
 
     def load_css_file_to_settings(self):
+        """
+        Reads CSS content from file specified in settings
+        and add its content to the settings, so it's available anytime later.
+        """
+
         css_file = "Packages/" + self.settings.get("css_file", "Intellitip/css/default.css")
 
         css = sublime.load_resource(css_file).replace("\r", "")
@@ -32,21 +45,29 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         self.settings.set("css", css)
 
     def get_selected_function_name(self):
+        """
+        Extracts function name (current word) from selection.
+        """
+
         selection = self.view.sel()[0]
         word      = self.view.word(selection)
 
         return self.view.substr(word)
 
     def get_language(self):
+        """
+        Reads language being used from configuration, sublime syntax settings,
+        or TM language settings (whichever is defined first).
+
+        Returns None on failure.
+        """
+
         language = None
 
         # Try to match against the current scope
         scope = self.view.scope_name(self.view.sel()[0].b)
-        print("scope: " + scope)
 
         for config_pattern, config_language in self.settings.get("docs").items():
-            print("config_pattern: "  + config_pattern)
-            print("config_language: " + config_language)
             if re.match(".*" + config_pattern, scope):
                 return config_language
 
@@ -67,6 +88,11 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         return language
 
     def add_completions_to_cache(self, language):
+        """
+        Adds completions for specified language from file to cache.
+        If completions are not available, adds empty dict instead.
+        """
+
         path_db = os.path.dirname(os.path.abspath(__file__)) + "/db/%s.json" % language
 
         if os.path.exists(path_db):
@@ -77,12 +103,23 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         self.cached_completions[language] = completions
 
     def get_completions_from_cache(self, language):
+        """
+        Returns cached completions for specified language.
+        If completions are not in cache, they're added to it first.
+        In case there are no completions defined for the language,
+        empty dict is returned instead.
+        """
+
         if language not in self.cached_completions:
             self.add_completions_to_cache(language)
 
         return self.cached_completions[language]
 
     def build_completion_html(self, completion_data):
+        """
+        Creates HTML containing completions.
+        """
+
         html_message = []
 
         html_message.append("<style>%s</style>" % self.settings.get("css"))
@@ -103,9 +140,19 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         return ''.join(html_message)
 
     def on_navigate(self, link, language):
+        """
+        On-click handler for links in completion popup.
+        Opens a browser with specified link.
+        """
+
         webbrowser.open_new_tab(self.settings.get("help_links")[language.lower()] % link)
 
     def run(self, _):
+        """
+        Executes the plugin.
+        Reads language settings, completions for it and displays a popup containg it.
+        """
+
         language = self.get_language()
         completions_for_language = self.get_completions_from_cache(language)
 
@@ -123,6 +170,6 @@ class IntellitipCommand(sublime_plugin.TextCommand):
         help_message = self.build_completion_html(completion_for_function)
 
         self.view.show_popup(help_message,
-                             max_width = 1200,
-                             max_height = 1200,
+                             max_width   = 1200,
+                             max_height  = 1200,
                              on_navigate = lambda link: self.on_navigate(link, language))
